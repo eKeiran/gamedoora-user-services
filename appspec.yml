@@ -1,0 +1,31 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /home/ec2-user/server/user-services
+    overwrite: true
+file_exists_behavior: OVERWRITE
+permissions:
+  - object: /
+    pattern: "**"
+    owner: ec2-user
+    group: ec2-user
+
+hooks:
+  AfterInstall:
+    - location: clear_artifacts.sh
+      timeout: 300
+      runas: ec2-user
+  AfterInstall:
+    - location: set_privileges.sh
+      timeout: 300
+      runas: ec2-user
+  ApplicationStart:
+    - location: service_start.sh
+      timeout: 20
+      runas: ec2-user
+  ApplicationStop:
+    - location: service_stop.sh
+      timeout: 20
+      runas: ec2-user

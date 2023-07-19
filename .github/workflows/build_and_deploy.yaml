@@ -1,0 +1,46 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - feat/ci-cd
+  pull_request:
+    branches:
+      - main
+      - feat/ci-cd
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          server-id: github
+          server-username: GITHUB_USER_REF
+          server-password: GITHUB_TOKEN_REF
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+        env:
+          GITHUB_USER_REF: ${{ secrets.PACKAGE_ACCESS_USER }}
+          GITHUB_TOKEN_REF: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
+
+      - name: Add execute permissions to script
+        run: chmod +x ./deploy.sh
+
+      - name: Copy JAR over SSH and restart service
+        id: deploy
+        run: ./deploy.sh
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}

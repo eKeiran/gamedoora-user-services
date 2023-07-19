@@ -1,0 +1,57 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          server-id: github
+          server-username: GITHUB_USER_REF
+          server-password: GITHUB_TOKEN_REF
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+        env:
+          GITHUB_USER_REF: ${{ secrets.PACKAGE_ACCESS_USER }}
+          GITHUB_TOKEN_REF: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
+
+      - name: Add execute permissions to script
+        run: chmod +x ./check-version.sh
+
+      - name: Check if version exists
+        id: chkvrsn
+        run: ./check-version.sh
+        env:
+          PAT: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
+          USER: ${{ secrets.PACKAGE_ACCESS_USER }}
+
+      - name: Publish to GitHub Packages
+        run: mvn deploy
+        env:
+          GITHUB_USER_REF: ${{ secrets.PACKAGE_ACCESS_USER }}
+          GITHUB_TOKEN_REF: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
+        if: ${{ steps.chkvrsn.outputs.exists == 'false' }}
+
+## While I've used a common technique for  publishing  package to repositories, the process for publishing packages to GitHub Packages differs slightly. If any issues arise,replace the "Publish to GitHub Packages" stage above with the following stages.
+## Details are available here https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-maven#publishing-packages-to-github-packages
+#      - name: Set up JDK
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '17'
+#          distribution: 'adopt'
+#      - name: Publish to GitHub Packages
+#        run: mvn deploy
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.PACKAGE_ACCESS_TOKEN }}
+#        if: ${{ steps.chkvrsn.outputs.exists == 'false' }}
