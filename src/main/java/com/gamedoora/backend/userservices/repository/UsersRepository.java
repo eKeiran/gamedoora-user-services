@@ -1,8 +1,12 @@
 package com.gamedoora.backend.userservices.repository;
+import javax.persistence.Query;
 
 import java.util.List;
 
+import com.gamedoora.model.dao.Roles;
 import com.gamedoora.model.dao.UserRole;
+import com.gamedoora.model.dao.Skills;
+
 import com.gamedoora.model.dao.UserSkills;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.PropertySource;
@@ -16,16 +20,17 @@ import com.gamedoora.model.dao.Users;
 //@EntityScan("com.gamedoora.model.dao.*")
 public interface UsersRepository extends JpaRepository<Users, Long> {
 
-	List<Users> findByEmailContaining(String name);
+	List<Users> findByEmailContaining(String email);
 
-	Users findByName(String name);
-	Users findByRole(UserRole role);
+	Users findByFirstName(String firstName);
+	Users findByLastName(String lastName);
+	Users findByUserRole(Roles role);
 
-	Users findBySkill(UserSkills skill);
+	Users findByUserSkills(Skills skill);
 
-	List<UserRole> findRolesBySkill_SkillsId(Long skillsId);
+	List<UserRole> findUserRolesByUserSkills_SkillsId(Long skillsId);
 	// multiple roles with one skill
 
-	List<Users> listUsersBySkill_SkillsId(Long skillsId);
+	List<Users> findByUserSkills_SkillsId(Long skillsId);
 
 }

@@ -13,5 +13,5 @@ public interface SkillsRepository extends JpaRepository<Skills, Long> {
 
 	List<Skills> findByNameContaining(String name);
 
-	List<Users> findByUsers_UserId(Long userId);
+	List<Skills> findByUserSkills_Users_Id(Long userId);
 }
